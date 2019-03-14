@@ -12,7 +12,7 @@
 #include <kern/kdebug.h>
 
 #define CMDBUF_SIZE	80	// enough for one VGA text line
-
+#define BYTE_MASK	0xFF
 
 struct Command {
 	const char *name;
@@ -82,13 +82,26 @@ start_overflow(void)
     // hint: You can use the read_pretaddr function to retrieve 
     //       the pointer to the function call return address;
 
-    char str[256] = {};
+    /*char str[256] = {};
     int nstr = 0;
-    char *pret_addr;
+   	// Your code here.
+    char* pretaddr = (char*)read_pretaddr();
+    char* overflow_addr = (char*)do_overflow;
+    char tmp_ch = ' ';
+    for(int i = 0; i < 4; i++){
+	cprintf("%*s%n\n", pretaddr[i], "", pretaddr + 4 + i);
+    }
 
-	// Your code here.
-    
-
+    for(int i = 0; i < 4; i++){
+	cprintf("%*s%n\n", overflow_addr[i], "", pretaddr + i);
+    }*/
+	char* pret_addr = (char*)read_pretaddr();
+	uint32_t overflow_addr = (uint32_t) do_overflow;
+	int i;
+	for(i = 0; i < 4; i++)
+		cprintf("%*s%n\n", pret_addr[i] & 0xFF, "", pret_addr + 4 +i);
+	for(i = 0; i < 4; i++)
+		cprintf("%*s%n\n", (overflow_addr >> (8*i)) & 0xFF, "", pret_addr + i);
 
 }
 
@@ -102,7 +115,24 @@ int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
 	// Your code here.
-	overflow_me();
+	uint32_t ebp = read_ebp();
+	uint32_t eip = *((uint32_t*)(ebp + 4));
+	struct Eipdebuginfo eipinfo;
+	uint32_t* args;
+	
+	char func_name[1024];
+	while(ebp){
+		args = (uint32_t*)(ebp + 8);
+		cprintf(" eip %08x ebp %08x args %08x %08x %08x %08x %08x", eip, ebp, args[0], args[1], args[2], args[3], args[4]);
+		if(debuginfo_eip(eip, &eipinfo) == 0){
+			memcpy(func_name, eipinfo.eip_fn_name, eipinfo.eip_fn_namelen);
+			func_name[eipinfo.eip_fn_namelen] = '\0';
+			cprintf("	%s:%d %s+%d\n", eipinfo.eip_file, eipinfo.eip_line, func_name, eip - eipinfo.eip_fn_addr);
+		}
+		ebp = *((uint32_t*)ebp); //the last level ebp
+		eip = *((uint32_t*)(ebp + 4)); //the last level eip
+	}		
+	//overflow_me();
     	cprintf("Backtrace success\n");
 	return 0;
 }
@@ -168,4 +198,12 @@ monitor(struct Trapframe *tf)
 			if (runcmd(buf, tf) < 0)
 				break;
 	}
+}
+
+unsigned
+read_eip()
+{
+	uint32_t callerpc;
+	__asm __volatile("movl 4(%%ebp), %0" : "=r" (callerpc));
+	return callerpc;
 }
