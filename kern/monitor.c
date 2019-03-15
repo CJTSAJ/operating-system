@@ -102,6 +102,8 @@ start_overflow(void)
 		cprintf("%*s%n\n", pret_addr[i] & 0xFF, "", pret_addr + 4 +i);
 	for(i = 0; i < 4; i++)
 		cprintf("%*s%n\n", (overflow_addr >> (8*i)) & 0xFF, "", pret_addr + i);
+	//*((uint32_t*)(pret_addr + 4)) = pret_addr;
+	//*((uint32_t*)pret_addr) = overflow_addr;
 
 }
 
@@ -114,6 +116,7 @@ overflow_me(void)
 int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
+	//overflow_me();
 	// Your code here.
 	uint32_t ebp = read_ebp();
 	uint32_t eip = *((uint32_t*)(ebp + 4));
@@ -132,7 +135,7 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 		ebp = *((uint32_t*)ebp); //the last level ebp
 		eip = *((uint32_t*)(ebp + 4)); //the last level eip
 	}		
-	//overflow_me();
+
     	cprintf("Backtrace success\n");
 	return 0;
 }
