@@ -97,7 +97,7 @@ boot_alloc(uint32_t n)
 	// to any kernel code or global variables.
 	if (!nextfree) {
 		extern char end[];
-		nextfree = ROUNDUP((char *) end, PGSIZE);
+		nextfree = ROUNDUP((char *) end, PGSIZE); //ROUNDUP  multiple of PGSIZE
 	}
 
 	// Allocate a chunk large enough to hold 'n' bytes, then update
@@ -106,7 +106,15 @@ boot_alloc(uint32_t n)
 	//
 	// LAB 2: Your code here.
 
-	return NULL;
+	if(n == 0)
+		return (void*)nextfree;
+	else if(n < 0)
+		return NULL;
+
+	void *kva_ret = (void*)nextfree;
+
+	nextfree = KADDR(PADDR(ROUNDUP(nextfree + n, PGSIZE))); //check and panics
+	return kva_ret;
 }
 
 // Set up a two-level page table:
