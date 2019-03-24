@@ -39,6 +39,24 @@ mon_help(int argc, char **argv, struct Trapframe *tf)
 }
 
 int
+mon_time(int argc, char **argv, struct Trapframe *tf)
+{
+	/*unsigned long eax, edx;
+ 	 __asm__ volatile("rdtsc" : "=a" (eax), "=d" (edx));
+  	unsigned long long timestart  = ((unsigned long long)eax) | (((unsigned long long)edx) << 32);
+	
+	for(int i = 0; i < argc; i++){
+		runcmd(argv[i], NULL);	
+	}
+  	
+
+  	__asm__ volatile("rdtsc" : "=a" (eax), "=d" (edx));
+  	unsigned long long timeend  = ((unsigned long long)eax) | (((unsigned long long)edx) << 32);
+
+  	cprintf("kerninfo cycles: %08d\n",timeend-timestart);*/
+	return 0;
+}
+int
 mon_kerninfo(int argc, char **argv, struct Trapframe *tf)
 {
 	extern char _start[], entry[], etext[], edata[], end[];
@@ -82,28 +100,22 @@ start_overflow(void)
     // hint: You can use the read_pretaddr function to retrieve 
     //       the pointer to the function call return address;
 
-    /*char str[256] = {};
+    char str[256] = {};
     int nstr = 0;
    	// Your code here.
     char* pretaddr = (char*)read_pretaddr();
-    char* overflow_addr = (char*)do_overflow;
+    int overflow_addr = (int) do_overflow;
     char tmp_ch = ' ';
+    int tmp_num = 0;
     for(int i = 0; i < 4; i++){
-	cprintf("%*s%n\n", pretaddr[i], "", pretaddr + 4 + i);
+	tmp_num = (unsigned char)(pretaddr[i]);
+	cprintf("%*s%n\n", tmp_num, "", pretaddr + 4 + i);
     }
 
     for(int i = 0; i < 4; i++){
-	cprintf("%*s%n\n", overflow_addr[i], "", pretaddr + i);
-    }*/
-	char* pret_addr = (char*)read_pretaddr();
-	uint32_t overflow_addr = (uint32_t) do_overflow;
-	int i;
-	for(i = 0; i < 4; i++)
-		cprintf("%*s%n\n", pret_addr[i] & 0xFF, "", pret_addr + 4 +i);
-	for(i = 0; i < 4; i++)
-		cprintf("%*s%n\n", (overflow_addr >> (8*i)) & 0xFF, "", pret_addr + i);
-	//*((uint32_t*)(pret_addr + 4)) = pret_addr;
-	//*((uint32_t*)pret_addr) = overflow_addr;
+	tmp_num = (overflow_addr >> (8*i)) & BYTE_MASK;
+	cprintf("%*s%n\n", tmp_num, "", pretaddr + i);
+    }
 
 }
 
@@ -116,7 +128,7 @@ overflow_me(void)
 int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
-	//overflow_me();
+	overflow_me();
 	// Your code here.
 	uint32_t ebp = read_ebp();
 	uint32_t eip = *((uint32_t*)(ebp + 4));
@@ -201,12 +213,4 @@ monitor(struct Trapframe *tf)
 			if (runcmd(buf, tf) < 0)
 				break;
 	}
-}
-
-unsigned
-read_eip()
-{
-	uint32_t callerpc;
-	__asm __volatile("movl 4(%%ebp), %0" : "=r" (callerpc));
-	return callerpc;
 }

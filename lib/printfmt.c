@@ -302,7 +302,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 				  char* numptr = va_arg(ap, char *);
 				  if(numptr == NULL)
 				  	printfmt(putch, putdat, "%s", null_error);
-				  else if(*((int*)putdat) > 127){
+				  else if(*((int*)putdat) > 254){
 				  	printfmt(putch, putdat, "%s", overflow_error);
 					*numptr = -1;
 			  	  }
