@@ -14,7 +14,8 @@ void
 i386_init(void)
 {
 	extern char edata[], end[];
-
+	// Lab1 only
+	char chnum1 = 0, chnum2 = 0, ntest[256] = {};
 	// Before doing anything else, complete the ELF loading process.
 	// Clear the uninitialized global data (BSS) section of our program.
 	// This ensures that all static/global variables start out zero.
@@ -29,7 +30,7 @@ i386_init(void)
 	cprintf("chnum1: %d chnum2: %d\n", chnum1, chnum2);
 	cprintf("%n", NULL);
 	memset(ntest, 0xd, sizeof(ntest) - 1);
-	cprintf("%s%n", ntest, &chnum1); 
+	cprintf("%s%n", ntest, &chnum1);
 	cprintf("chnum1: %d\n", chnum1);
 	cprintf("show me the sign: %+d, %+d\n", 1024, -1024);
 
