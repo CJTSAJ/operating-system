@@ -381,7 +381,22 @@ pte_t *
 pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
 	// Fill this function in
-	return NULL;
+	pde_t *va_dir = &pgdir[PDX(va)];
+	pte_t *result = NULL;
+	//alloc new pte
+	if(!(*va_dir & PTE_P)){
+		if(!create) return NULL;
+
+		struct PageInfo *new_page = page_alloc(1);
+		if(new_page == NULL)
+			return NULL;
+
+		new_page->pp_ref++;
+		*va_dir = page2pa(new_page) | PTE_P;
+	}
+	pte_t* second_level = KADDR(PTE_ADDR(*va_dir));
+	result = &second_level[PTX(va)];
+	return result;
 }
 
 //
@@ -399,6 +414,11 @@ static void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
 	// Fill this function in
+	int len = size / PGSIZE;
+	for(int i = 0; i < len; i++){
+		pte_t *tmp_pte = pgdir_walk(pgdir, (void*)(va + i * PGSIZE), 1);
+		*tmp_pte = pa | perm | PTE_P;
+	}
 }
 
 //
