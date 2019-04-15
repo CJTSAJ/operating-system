@@ -24,7 +24,7 @@ static struct Env *env_free_list;	// Free environment list
 // Set up global descriptor table (GDT) with separate segments for
 // kernel mode and user mode.  Segments serve many purposes on the x86.
 // We don't use any of their memory-mapping capabilities, but we need
-// them to switch privilege levels. 
+// them to switch privilege levels.
 //
 // The kernel and user segments are identical except for the DPL.
 // To load the SS register, the CPL must equal the DPL.  Thus,
@@ -116,6 +116,10 @@ env_init(void)
 {
 	// Set up envs array
 	// LAB 3: Your code here.
+	env_free_list = &envs[0];int len = NENV - 1;
+	for(int i = 0; i < len; i++)
+		envs[i].env_link = &envs[i+1];
+	envs[len].env_link = NULL;
 
 	// Per-CPU part of the initialization
 	env_init_percpu();
@@ -460,4 +464,3 @@ env_run(struct Env *e)
 
 	panic("env_run not yet implemented");
 }
-
