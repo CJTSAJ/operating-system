@@ -13,7 +13,7 @@
 #include <kern/trap.h>
 
 #define CMDBUF_SIZE	80	// enough for one VGA text line
-
+#define BYTE_MASK	0xFF
 
 struct Command {
 	const char *name;
@@ -39,6 +39,24 @@ mon_help(int argc, char **argv, struct Trapframe *tf)
 	return 0;
 }
 
+int
+mon_time(int argc, char **argv, struct Trapframe *tf)
+{
+	/*unsigned long eax, edx;
+ 	 __asm__ volatile("rdtsc" : "=a" (eax), "=d" (edx));
+  	unsigned long long timestart  = ((unsigned long long)eax) | (((unsigned long long)edx) << 32);
+
+	for(int i = 0; i < argc; i++){
+		runcmd(argv[i], NULL);
+	}
+
+
+  	__asm__ volatile("rdtsc" : "=a" (eax), "=d" (edx));
+  	unsigned long long timeend  = ((unsigned long long)eax) | (((unsigned long long)edx) << 32);
+
+  	cprintf("kerninfo cycles: %08d\n",timeend-timestart);*/
+	return 0;
+}
 int
 mon_kerninfo(int argc, char **argv, struct Trapframe *tf)
 {
