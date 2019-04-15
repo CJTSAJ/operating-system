@@ -183,6 +183,10 @@ env_setup_vm(struct Env *e)
 	//    - The functions in kern/pmap.h are handy.
 
 	// LAB 3: Your code here.
+	e->env_pgdir = page2kva(p);
+	p->pp_ref++;
+	for(int i = PDX(UTOP); i < NPDENTRIES; i++)
+		e->env_pgdir[i] = kern_pgdir[i];
 
 	// UVPT maps the env's own page table read-only.
 	// Permissions: kernel R, user R
@@ -271,6 +275,17 @@ region_alloc(struct Env *e, void *va, size_t len)
 	//   'va' and 'len' values that are not page-aligned.
 	//   You should round va down, and round (va + len) up.
 	//   (Watch out for corner-cases!)
+	void* start = ROUNDDOWN(va, PGSIZE);
+	void* end = ROUNDUP(va, PGSIZE);
+
+	for(int i = start; i < end; i+=PGSIZE){
+		struct PageInfo* tmp_page = page_alloc(0);
+		if(!tmp_page)
+			panic("region_alloc: page_alloc failed\n");
+
+		page_insert(e->env_pgdir, tmp_page, i, PTE_W | PTE_U);
+	}
+
 }
 
 //
