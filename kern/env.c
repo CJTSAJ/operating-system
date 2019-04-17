@@ -278,7 +278,7 @@ region_alloc(struct Env *e, void *va, size_t len)
 	void* start = ROUNDDOWN(va, PGSIZE);
 	void* end = ROUNDUP(va, PGSIZE);
 
-	for(int i = start; i < end; i+=PGSIZE){
+	for(void* i = start; i < end; i+=PGSIZE){
 		struct PageInfo* tmp_page = page_alloc(0);
 		if(!tmp_page)
 			panic("region_alloc: page_alloc failed\n");
@@ -342,11 +342,33 @@ load_icode(struct Env *e, uint8_t *binary)
 	//  What?  (See env_run() and env_pop_tf() below.)
 
 	// LAB 3: Your code here.
+	struct Proghdr *ph, *eph;
+	struct Elf* elf = (struct Elf*)binary;
+	if(elf->e_magic != ELF_MAGIC)
+		panic("load_icode: a invalid struct Elf\n");
 
+
+	ph = (struct Proghdr *) ((uint8_t *) elf + elf->e_phoff);
+	eph = ph + elf->e_phnum;
+
+	lcr3(PADDR(e->env_pgdir));
+	for(; ph < eph; ph++){
+		if(ph->p_type == ELF_PROG_LOAD){
+			//alloc page for ph, copy file, set remaining 0
+			region_alloc(e, (void*)ph->p_va, ph->p_memsz);
+			memset((void*)ph->p_va, 0, ph->p_memsz);
+			memcpy((void*)ph->p_va, binary + ph->p_offset, ph->p_filesz);
+		}
+	}
+	lcr3(PADDR(kern_pgdir));
+
+	//entry point
+	e->env_tf.tf_eip = elf->e_entry;
 	// Now map one page for the program's initial stack
 	// at virtual address USTACKTOP - PGSIZE.
 
 	// LAB 3: Your code here.
+	region_alloc(e, (void*)(USTACKTOP - PGSIZE), PGSIZE);
 }
 
 //
@@ -360,6 +382,16 @@ void
 env_create(uint8_t *binary, enum EnvType type)
 {
 	// LAB 3: Your code here.
+	struct Env* new_env;
+	//0 success, < 0 fail, envid_t = 0 stand for current environment
+	int ret =	env_alloc(&new_env, 0);
+
+	if(ret < 0)
+		panic("env_create: env_alloc failed\n");
+
+	new_env->env_type = type;
+
+	load_icode(new_env, binary);
 }
 
 //
@@ -476,6 +508,18 @@ env_run(struct Env *e)
 	//	e->env_tf to sensible values.
 
 	// LAB 3: Your code here.
+	//step 1
+	if(curenv != e){
+		if(curenv && curenv->env_status == ENV_RUNNING)
+			curenv->env_status = ENV_RUNNABLE;
 
-	panic("env_run not yet implemented");
+		curenv = e;
+		curenv->env_status = ENV_RUNNING;
+		curenv->env_runs++;
+		lcr3(PADDR(curenv->env_pgdir));
+	}
+
+	//step 2
+	env_pop_tf(&curenv->env_tf);
+	//panic("env_run not yet implemented");
 }
