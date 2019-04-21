@@ -265,7 +265,7 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 // Pages should be writable by user and kernel.
 // Panic if any allocation attempt fails.
 //
-static void
+void
 region_alloc(struct Env *e, void *va, size_t len)
 {
 	// LAB 3: Your code here.
@@ -369,6 +369,8 @@ load_icode(struct Env *e, uint8_t *binary)
 
 	// LAB 3: Your code here.
 	region_alloc(e, (void*)(USTACKTOP - PGSIZE), PGSIZE);
+	//heap init
+	e->env_heap = ROUNDDOWN(USTACKTOP - PGSIZE,PGSIZE);
 }
 
 //

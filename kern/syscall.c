@@ -19,7 +19,7 @@ sys_cputs(const char *s, size_t len)
 {
 	// Check that the user has permission to read memory [s, s+len).
 	// Destroy the environment if not.
-
+	user_mem_assert(curenv, (void*)s, len, PTE_U);
 	// LAB 3: Your code here.
 
 	// Print the string supplied by the user.
@@ -76,8 +76,10 @@ sys_map_kernel_page(void* kpage, void* va)
 static int
 sys_sbrk(uint32_t inc)
 {
-    // LAB3: your code here.
-    return 0;
+    // LAB3: your code here
+		region_alloc(curenv, (void*)(curenv->env_heap - inc), inc);
+		curenv->env_heap = ROUNDDOWN(curenv->env_heap - inc, PGSIZE);
+    return curenv->env_heap;
 }
 
 // Dispatches to the correct kernel function, passing the arguments.
