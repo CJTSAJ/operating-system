@@ -20,7 +20,7 @@ sys_cputs(const char *s, size_t len)
 {
 	// Check that the user has permission to read memory [s, s+len).
 	// Destroy the environment if not.
-
+	user_mem_assert(curenv, (void*)s, len, PTE_U);
 	// LAB 3: Your code here.
 
 	// Print the string supplied by the user.
@@ -277,8 +277,10 @@ sys_map_kernel_page(void* kpage, void* va)
 static int
 sys_sbrk(uint32_t inc)
 {
-    // LAB3: your code here.
-    return 0;
+    // LAB3: your code here
+		region_alloc(curenv, (void*)(curenv->env_heap - inc), inc);
+		curenv->env_heap = ROUNDDOWN(curenv->env_heap - inc, PGSIZE);
+    return curenv->env_heap;
 }
 
 // Dispatches to the correct kernel function, passing the arguments.
@@ -289,11 +291,17 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// Return any appropriate return value.
 	// LAB 3: Your code here.
 
-	panic("syscall not implemented");
+	//panic("syscall not implemented");
 
 	switch (syscallno) {
-	default:
-		return -E_INVAL;
+		case SYS_cputs: sys_cputs((char*)a1, (size_t) a2); return 0;
+		case SYS_cgetc: return sys_cgetc();
+		case SYS_getenvid: return sys_getenvid();
+		case SYS_env_destroy: return sys_env_destroy((envid_t) a1);
+	  case SYS_map_kernel_page: return sys_map_kernel_page((void*) a1, (void*) a2);
+	  case SYS_sbrk: return sys_sbrk((uint32_t) a1);
+		//case NSYSCALLS: return 0;
+		default:
+			return -E_INVAL;
 	}
 }
-
