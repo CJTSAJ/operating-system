@@ -11,6 +11,7 @@
 #include <kern/syscall.h>
 #include <kern/console.h>
 #include <kern/sched.h>
+#include <kern/spinlock.h>
 
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
@@ -292,16 +293,21 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// LAB 3: Your code here.
 
 	//panic("syscall not implemented");
-
+	int32_t ret = 0;
+	lock_kernel();
 	switch (syscallno) {
-		case SYS_cputs: sys_cputs((char*)a1, (size_t) a2); return 0;
-		case SYS_cgetc: return sys_cgetc();
-		case SYS_getenvid: return sys_getenvid();
-		case SYS_env_destroy: return sys_env_destroy((envid_t) a1);
-	  case SYS_map_kernel_page: return sys_map_kernel_page((void*) a1, (void*) a2);
-	  case SYS_sbrk: return sys_sbrk((uint32_t) a1);
+		case SYS_cputs: sys_cputs((char*)a1, (size_t) a2); break;
+		case SYS_cgetc: ret = sys_cgetc(); break;
+		case SYS_getenvid: ret = sys_getenvid(); break;
+		case SYS_env_destroy: ret = sys_env_destroy((envid_t) a1); break;
+	  case SYS_map_kernel_page: ret = sys_map_kernel_page((void*) a1, (void*) a2); break;
+	  case SYS_sbrk: ret = sys_sbrk((uint32_t) a1); break;
+		case SYS_yield: sys_yield(); break;
 		//case NSYSCALLS: return 0;
 		default:
-			return -E_INVAL;
+			ret = -E_INVAL;
+			break;
 	}
+	unlock_kernel();
+	return ret;
 }

@@ -92,7 +92,7 @@ trap_init(void)
   extern void ENTRY_ALIGN  ();/* 17 aligment check*/
   extern void ENTRY_MCHK   ();/* 18 machine check*/
   extern void ENTRY_SIMDERR();/* 19 SIMD floating point error*/
-	//extern void ENTRY_SYSCALL(); // system call
+	extern void ENTRY_SYSCALL(); // system call
 
 	SETGATE(idt[T_DIVIDE ],0,GD_KT,ENTRY_DIVIDE ,0);
 	SETGATE(idt[T_DEBUG  ],0,GD_KT,ENTRY_DEBUG  ,0);
@@ -114,12 +114,12 @@ trap_init(void)
 	SETGATE(idt[T_ALIGN  ],0,GD_KT,ENTRY_ALIGN  ,0);
 	SETGATE(idt[T_MCHK   ],0,GD_KT,ENTRY_MCHK   ,0);
 	SETGATE(idt[T_SIMDERR],0,GD_KT,ENTRY_SIMDERR,0);
-	//SETGATE(idt[T_SYSCALL],0,GD_KT,ENTRY_SYSCALL,0);
+	SETGATE(idt[T_SYSCALL],0,GD_KT,ENTRY_SYSCALL,3);
 
-	extern void sysenter_handler();
+	/*extern void sysenter_handler();
  	wrmsr(0x174, GD_KT, 0);           // cs
  	wrmsr(0x175, KSTACKTOP, 0);       //esp
- 	wrmsr(0x176, sysenter_handler, 0);// eip
+ 	wrmsr(0x176, sysenter_handler, 0);// eip*/
 	// Per-CPU setup
 	trap_init_percpu();
 }
@@ -238,14 +238,14 @@ trap_dispatch(struct Trapframe *tf)
 	// interrupt using lapic_eoi() before calling the scheduler!
 	// LAB 4: Your code here.
 
-	/*switch (tf->tf_trapno) {
+	switch (tf->tf_trapno) {
 		case T_PGFLT: page_fault_handler(tf); break;
 		case T_BRKPT: monitor(tf); break;
 		case T_SYSCALL: syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,
 			tf->tf_regs.reg_ebx, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
 			break;
 		default: break;
-	}*/
+	}
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
 	if (tf->tf_cs == GD_KT)
@@ -329,7 +329,7 @@ page_fault_handler(struct Trapframe *tf)
 
 	// LAB 3: Your code here.
 	// check low 2 bits of cs
-	if(!(tf->tf_cs & 0x11))
+	if(!(tf->tf_cs & 0x3))
 		panic("kernel page fault\n");
 
 	// We've already handled kernel-mode exceptions, so if we get here,
