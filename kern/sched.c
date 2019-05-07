@@ -29,7 +29,35 @@ sched_yield(void)
 	// below to halt the cpu.
 
 	// LAB 4: Your code here.
-	envid_t env_index = ENVX(curenv->env_id);
+	size_t i;
+	if (curenv == NULL) {
+		for (i = 0; i < NENV; i++) {
+			if (envs[i].env_status == ENV_RUNNABLE)
+				env_run(&envs[i]);
+		}
+	}
+	else {
+		envid_t env_index = ENVX(curenv->env_id);
+
+		for(i = (env_index + 1) % NENV; (i % NENV) != env_index; i++){
+			if(envs[i].env_status == ENV_RUNNABLE){
+				env_run(&envs[i]);
+			}
+		}
+
+		//if no runnable, and current is still running, take it
+		if(curenv->env_status == ENV_RUNNING)
+			env_run(curenv);
+		/*envid_t envid = ENVX(curenv->env_id);
+		for (i = (envid + 1) % NENV; i != envid; i = (i + 1) % NENV) {
+			if (envs[i].env_status == ENV_RUNNABLE)
+				env_run(&envs[i]);
+		}
+		if (curenv->env_status == ENV_RUNNING)
+			env_run(curenv);*/
+	}
+
+	/*envid_t env_index = ENVX(curenv->env_id);
 
 	for(int i = (env_index + 1) % NENV; (i % NENV) != env_index; i++){
 		if(envs[i].env_status == ENV_RUNNABLE){
@@ -40,7 +68,7 @@ sched_yield(void)
 	//if no runnable, and current is still running, take it
 	if(curenv->env_status == ENV_RUNNING){
 		env_run(curenv);
-	}
+	}*/
 	// sched_halt never returns
 	sched_halt();
 }

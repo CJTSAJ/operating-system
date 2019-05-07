@@ -295,6 +295,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	//panic("syscall not implemented");
 	int32_t ret = 0;
 	lock_kernel();
+	curenv->env_tf = *((struct Trapframe *)a5);
 	switch (syscallno) {
 		case SYS_cputs: sys_cputs((char*)a1, (size_t) a2); break;
 		case SYS_cgetc: ret = sys_cgetc(); break;
