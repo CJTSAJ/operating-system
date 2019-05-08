@@ -48,13 +48,6 @@ sched_yield(void)
 		//if no runnable, and current is still running, take it
 		if(curenv->env_status == ENV_RUNNING)
 			env_run(curenv);
-		/*envid_t envid = ENVX(curenv->env_id);
-		for (i = (envid + 1) % NENV; i != envid; i = (i + 1) % NENV) {
-			if (envs[i].env_status == ENV_RUNNABLE)
-				env_run(&envs[i]);
-		}
-		if (curenv->env_status == ENV_RUNNING)
-			env_run(curenv);*/
 	}
 
 	/*envid_t env_index = ENVX(curenv->env_id);

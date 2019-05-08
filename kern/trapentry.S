@@ -66,9 +66,9 @@ TRAPHANDLER_NOEC(ENTRY_FPERR, T_FPERR) //16
 TRAPHANDLER_NOEC(ENTRY_ALIGN, T_ALIGN) //17
 TRAPHANDLER_NOEC(ENTRY_MCHK, T_MCHK) //18
 TRAPHANDLER_NOEC(ENTRY_SIMDERR, T_SIMDERR) //19
-//TRAPHANDLER_NOEC(ENTRY_SYSCALL, T_SYSCALL) //48
+TRAPHANDLER_NOEC(ENTRY_SYSCALL, T_SYSCALL) //48
 
-.globl sysenter_handler;
+/*.globl sysenter_handler;
 .type sysenter_handler, @function;
 .align 2;
 sysenter_handler:
@@ -87,15 +87,16 @@ pushw $0
 pushw %es
 pushal
 pushl %esp
+pushl 0x4(%ebp)
 pushl %edi
 pushl %ebx
 pushl %ecx
 pushl %edx
 pushl %eax
-call syscall
+call syscall_entry
 movl %ebp, %ecx
 movl %esi, %edx
-sysexit
+sysexit*/
 
 /*
  * Lab 3: Your code here for _alltraps

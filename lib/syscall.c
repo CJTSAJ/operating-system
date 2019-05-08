@@ -20,7 +20,7 @@ syscall(int num, int check, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// potentially change the condition codes and arbitrary
 	// memory locations.
 
-	asm volatile("pushl %%ecx\n\t"
+	/*asm volatile("pushl %%ecx\n\t"
 		      "pushl %%edx\n\t"
 	   			"pushl %%ebx\n\t"
 		 			"pushl %%esp\n\t"
@@ -40,7 +40,7 @@ syscall(int num, int check, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
           "popl %%ebx\n\t"
           "popl %%edx\n\t"
           "popl %%ecx\n\t"
-					
+
 		     : "=a" (ret)
 		     : "i" (T_SYSCALL),
 		       "a" (num),
@@ -49,7 +49,17 @@ syscall(int num, int check, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		       "b" (a3),
 		       "D" (a4),
 		       "S" (a5)
-		     : "cc", "memory");
+		     : "cc", "memory");*/
+				 asm volatile("int %1\n"
+			 		     : "=a" (ret)
+			 		     : "i" (T_SYSCALL),
+			 		       "a" (num),
+			 		       "d" (a1),
+			 		       "c" (a2),
+			 		       "b" (a3),
+			 		       "D" (a4),
+			 		       "S" (a5)
+			 		     : "cc", "memory");
 
 	if(check && ret > 0)
 		panic("syscall %d returned %d (> 0)", num, ret);
