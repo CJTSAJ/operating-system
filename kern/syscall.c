@@ -118,7 +118,7 @@ sys_env_set_status(envid_t envid, int status)
 	if(ret < 0)
 		return ret;
 
-	if(env_store->env_status != ENV_RUNNABLE || env_store->env_status != ENV_NOT_RUNNABLE)
+	if(env_store->env_status != ENV_RUNNABLE && env_store->env_status != ENV_NOT_RUNNABLE)
 		return -E_INVAL;
 
 	env_store->env_status = status;
@@ -221,10 +221,16 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	//   Use the third argument to page_lookup() to
 	//   check the current permissions on the page.
 	struct Env *env_store;
+	struct Env *env_store_;
 	int ret = envid2env(srcenvid, &env_store, 1);
 	struct PageInfo* tmp_page;
 	pte_t* pte_store;
+	pte_t* pte_store_;
 
+	if(ret < 0)
+		return ret;
+
+	ret = envid2env(dstenvid, &env_store_, 1);
 	if(ret < 0)
 		return ret;
 
@@ -244,7 +250,7 @@ sys_page_map(envid_t srcenvid, void *srcva,
 
 	// LAB 4: Your code here.
 	//panic("sys_page_map not implemented");
-	return page_insert(env_store->env_pgdir, tmp_page, dstva,perm);
+	return page_insert(env_store_->env_pgdir, tmp_page, dstva,perm);
 }
 
 // Unmap the page of memory at 'va' in the address space of 'envid'.
