@@ -50,9 +50,9 @@ dumbfork(void)
 	// so that the child will appear to have called sys_exofork() too -
 	// except that in the child, this "fake" call to sys_exofork()
 	// will return 0 instead of the envid of the child.
-	cprintf("dumbfork(void)---------------------\n");
+	//cprintf("dumbfork(void)---------------------\n");
 	envid = sys_exofork();
-	cprintf("dumbfork(void) envid %d-------------------\n", envid);
+	//cprintf("dumbfork(void) envid %d-------------------\n", envid);
 	if (envid < 0)
 		panic("sys_exofork: %e", envid);
 	if (envid == 0) {
@@ -63,7 +63,7 @@ dumbfork(void)
 		thisenv = &envs[ENVX(sys_getenvid())];
 		return 0;
 	}
-	cprintf("dumbfork(void)---------------------\n");
+	//cprintf("dumbfork(void)---------------------\n");
 	// We're the parent.
 	// Eagerly copy our entire address space into the child.
 	// This is NOT what you should do in your fork implementation.

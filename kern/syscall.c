@@ -94,7 +94,7 @@ sys_exofork(void)
 	env_store->env_tf.tf_regs.reg_eax = 0;
 	// LAB 4: Your code here.
 	//panic("sys_exofork not implemented");
-	cprintf("env_store->env_id: %d -------------\n", env_store->env_id);
+	//cprintf("env_store->env_id: %d -------------\n", env_store->env_id);
 	return env_store->env_id;
 }
 
@@ -170,11 +170,10 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 
 	struct Env *env_store;
 	int ret = envid2env(envid, &env_store, 1);
-	cprintf("1----------\n");
+
 	if(ret < 0)
 		return ret;
 
-	cprintf("1----------\n");
 	if((uintptr_t)va >= UTOP || (uintptr_t)va % PGSIZE)
 		return -E_INVAL;
 
@@ -190,7 +189,6 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 		page_free(new_page);
 		return ret;
 	}
-
 	// LAB 4: Your code here.
 	//panic("sys_page_alloc not implemented");
 	return 0;
@@ -229,17 +227,21 @@ sys_page_map(envid_t srcenvid, void *srcva,
 
 	if(ret < 0)
 		return ret;
+
 	if((uintptr_t)srcva >= UTOP || (uintptr_t)srcva % PGSIZE ||
 	(uintptr_t)dstva >= UTOP || (uintptr_t)dstva % PGSIZE)
 		return -E_INVAL;
 
 	tmp_page = page_lookup(env_store->env_pgdir, srcva, &pte_store);
-	if(!tmp_page || !page_lookup(env_store->env_pgdir, dstva, &pte_store))
+	if(!tmp_page)
 		return -E_INVAL;
+
 	if(!(perm & PTE_U) || !(perm & PTE_P) || (perm & ~PTE_SYSCALL))
 		return -E_INVAL;
+
 	if((perm & PTE_W) && !(*pte_store & PTE_W))
 		return -E_INVAL;
+
 	// LAB 4: Your code here.
 	//panic("sys_page_map not implemented");
 	return page_insert(env_store->env_pgdir, tmp_page, dstva,perm);
