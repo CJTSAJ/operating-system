@@ -92,6 +92,25 @@ trap_init(void)
   extern void ENTRY_ALIGN  ();/* 17 aligment check*/
   extern void ENTRY_MCHK   ();/* 18 machine check*/
   extern void ENTRY_SIMDERR();/* 19 SIMD floating point error*/
+
+	extern void ENTRY_IRQ_TIMER   ();/*  0*/
+  extern void ENTRY_IRQ_KBD     ();/*  1*/
+  extern void ENTRY_IRQ_2       ();/*  2*/
+  extern void ENTRY_IRQ_3       ();/*  3*/
+  extern void ENTRY_IRQ_SERIAL  ();/*  4*/
+  extern void ENTRY_IRQ_5       ();/*  5*/
+  extern void ENTRY_IRQ_6       ();/*  6*/
+  extern void ENTRY_IRQ_SPURIOUS();/*  7*/
+  extern void ENTRY_IRQ_8       ();/*  8*/
+  extern void ENTRY_IRQ_9       ();/*  9*/
+  extern void ENTRY_IRQ_10      ();/* 10*/
+  extern void ENTRY_IRQ_11      ();/* 11*/
+  extern void ENTRY_IRQ_12      ();/* 12*/
+  extern void ENTRY_IRQ_13      ();/* 13*/
+  extern void ENTRY_IRQ_IDE     ();/* 14*/
+  extern void ENTRY_IRQ_15      ();/* 15*/
+  extern void ENTRY_IRQ_ERROR   ();/* 19*/
+
 	extern void ENTRY_SYSCALL(); // system call
 
 	SETGATE(idt[T_DIVIDE ],0,GD_KT,ENTRY_DIVIDE ,0);
@@ -114,6 +133,25 @@ trap_init(void)
 	SETGATE(idt[T_ALIGN  ],0,GD_KT,ENTRY_ALIGN  ,0);
 	SETGATE(idt[T_MCHK   ],0,GD_KT,ENTRY_MCHK   ,0);
 	SETGATE(idt[T_SIMDERR],0,GD_KT,ENTRY_SIMDERR,0);
+
+	SETGATE(idt[IRQ_OFFSET+IRQ_TIMER   ], 0, GD_KT, ENTRY_IRQ_TIMER   , 0);
+  SETGATE(idt[IRQ_OFFSET+IRQ_KBD     ], 0, GD_KT, ENTRY_IRQ_KBD     , 0);
+  SETGATE(idt[IRQ_OFFSET+    2       ], 0, GD_KT, ENTRY_IRQ_2       , 0);
+  SETGATE(idt[IRQ_OFFSET+    3       ], 0, GD_KT, ENTRY_IRQ_3       , 0);
+  SETGATE(idt[IRQ_OFFSET+IRQ_SERIAL  ], 0, GD_KT, ENTRY_IRQ_SERIAL  , 0);
+  SETGATE(idt[IRQ_OFFSET+    5       ], 0, GD_KT, ENTRY_IRQ_5       , 0);
+  SETGATE(idt[IRQ_OFFSET+    6       ], 0, GD_KT, ENTRY_IRQ_6       , 0);
+  SETGATE(idt[IRQ_OFFSET+IRQ_SPURIOUS], 0, GD_KT, ENTRY_IRQ_SPURIOUS, 0);
+  SETGATE(idt[IRQ_OFFSET+    8       ], 0, GD_KT, ENTRY_IRQ_8       , 0);
+  SETGATE(idt[IRQ_OFFSET+    9       ], 0, GD_KT, ENTRY_IRQ_9       , 0);
+  SETGATE(idt[IRQ_OFFSET+    10      ], 0, GD_KT, ENTRY_IRQ_10      , 0);
+  SETGATE(idt[IRQ_OFFSET+    11      ], 0, GD_KT, ENTRY_IRQ_11      , 0);
+  SETGATE(idt[IRQ_OFFSET+    12      ], 0, GD_KT, ENTRY_IRQ_12      , 0);
+  SETGATE(idt[IRQ_OFFSET+    13      ], 0, GD_KT, ENTRY_IRQ_13      , 0);
+  SETGATE(idt[IRQ_OFFSET+IRQ_IDE     ], 0, GD_KT, ENTRY_IRQ_IDE     , 0);
+  SETGATE(idt[IRQ_OFFSET+    15      ], 0, GD_KT, ENTRY_IRQ_15      , 0);
+  SETGATE(idt[IRQ_OFFSET+IRQ_ERROR   ], 0, GD_KT, ENTRY_IRQ_ERROR   , 0);
+
 	SETGATE(idt[T_SYSCALL],0,GD_KT,ENTRY_SYSCALL,3);
 
 	// Per-CPU setup
@@ -230,11 +268,6 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
-
-	// Handle clock interrupts. Don't forget to acknowledge the
-	// interrupt using lapic_eoi() before calling the scheduler!
-	// LAB 4: Your code here.
-
 	switch (tf->tf_trapno) {
 		case T_PGFLT: page_fault_handler(tf); break;
 		case T_BRKPT: monitor(tf); break;
@@ -251,6 +284,15 @@ trap_dispatch(struct Trapframe *tf)
 		cprintf("Spurious interrupt on irq 7\n");
 		print_trapframe(tf);
 		return;
+	}
+
+	// Handle clock interrupts. Don't forget to acknowledge the
+	// interrupt using lapic_eoi() before calling the scheduler!
+	// LAB 4: Your code here.
+	if (tf->tf_trapno == IRQ_OFFSET + IRQ_TIMER) {
+  	lapic_eoi();
+  	sched_yield();
+  	return;
 	}
 
 	// Unexpected trap: The user process or the kernel has a bug.
