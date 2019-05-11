@@ -93,23 +93,23 @@ trap_init(void)
   extern void ENTRY_MCHK   ();/* 18 machine check*/
   extern void ENTRY_SIMDERR();/* 19 SIMD floating point error*/
 
-	extern void ENTRY_IRQ_TIMER   ();/*  0*/
-  extern void ENTRY_IRQ_KBD     ();/*  1*/
-  extern void ENTRY_IRQ_2       ();/*  2*/
-  extern void ENTRY_IRQ_3       ();/*  3*/
-  extern void ENTRY_IRQ_SERIAL  ();/*  4*/
-  extern void ENTRY_IRQ_5       ();/*  5*/
-  extern void ENTRY_IRQ_6       ();/*  6*/
-  extern void ENTRY_IRQ_SPURIOUS();/*  7*/
-  extern void ENTRY_IRQ_8       ();/*  8*/
-  extern void ENTRY_IRQ_9       ();/*  9*/
-  extern void ENTRY_IRQ_10      ();/* 10*/
-  extern void ENTRY_IRQ_11      ();/* 11*/
-  extern void ENTRY_IRQ_12      ();/* 12*/
-  extern void ENTRY_IRQ_13      ();/* 13*/
-  extern void ENTRY_IRQ_IDE     ();/* 14*/
-  extern void ENTRY_IRQ_15      ();/* 15*/
-  extern void ENTRY_IRQ_ERROR   ();/* 19*/
+	extern void ENTRY_IRQ_TIMER   ();//  0
+  extern void ENTRY_IRQ_KBD     ();//  1
+  extern void ENTRY_IRQ_2       ();//  2
+  extern void ENTRY_IRQ_3       ();//  3
+  extern void ENTRY_IRQ_SERIAL  ();//  4
+  extern void ENTRY_IRQ_5       ();//  5
+  extern void ENTRY_IRQ_6       ();//  6
+  extern void ENTRY_IRQ_SPURIOUS();//  7
+  extern void ENTRY_IRQ_8       ();//  8
+  extern void ENTRY_IRQ_9       ();//  9
+  extern void ENTRY_IRQ_10      ();// 10
+  extern void ENTRY_IRQ_11      ();// 11
+  extern void ENTRY_IRQ_12      ();// 12
+  extern void ENTRY_IRQ_13      ();// 13
+  extern void ENTRY_IRQ_IDE     ();// 14
+  extern void ENTRY_IRQ_15      ();// 15
+  extern void ENTRY_IRQ_ERROR   ();// 19
 
 	extern void ENTRY_SYSCALL(); // system call
 

@@ -87,36 +87,6 @@ TRAPHANDLER_NOEC( ENTRY_IRQ_ERROR   , IRQ_OFFSET+IRQ_ERROR   )  /* 19*/
 
 TRAPHANDLER_NOEC(ENTRY_SYSCALL, T_SYSCALL) //48
 
-/*.globl sysenter_handler;
-.type sysenter_handler, @function;
-.align 2;
-sysenter_handler:
-pushw $0
-pushw $GD_UD | 3
-pushl %ebp
-pushfl
-pushw $0
-pushw $GD_UT | 3
-pushl %esi
-pushl $0
-pushl $0
-pushw $0
-pushw %ds
-pushw $0
-pushw %es
-pushal
-pushl %esp
-pushl 0x4(%ebp)
-pushl %edi
-pushl %ebx
-pushl %ecx
-pushl %edx
-pushl %eax
-call syscall_entry
-movl %ebp, %ecx
-movl %esi, %edx
-sysexit*/
-
 /*
  * Lab 3: Your code here for _alltraps
  */
