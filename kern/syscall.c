@@ -326,7 +326,37 @@ static int
 sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 {
 	// LAB 4: Your code here.
-	panic("sys_ipc_try_send not implemented");
+	int r;
+	struct Env* env_store;
+	r = envid2env(envid, &env_store, 0);
+	if(r < 0)
+		return r;
+	if(!env_store->env_ipc_recving)
+	  return -E_IPC_NOT_RECV;
+
+	if((uintptr_t)srcva < UTOP){
+		if(PGOFF(srcva))
+			return -E_INVAL;
+		if(!(perm & PTE_U) || !(perm & PTE_P) || (perm & ~PTE_SYSCALL))
+			return -E_INVAL;
+
+		pte_t *tmp_pte;
+		struct PageInfo* tmp_page = page_lookup(curenv->env_pgdir, srcva, &tmp_pte);
+		if(!tmp_page || ((*tmp_pte & perm) != perm))
+			return -E_INVAL;
+		r = page_insert(env_store->env_pgdir, tmp_page, env_store->env_ipc_dstva, perm);
+		if(r < 0)
+			return r;
+	}
+
+	env_store->env_ipc_recving = 0;
+	env_store->env_ipc_from = curenv->env_id;
+	env_store->env_ipc_value = value;
+	env_store->env_ipc_perm = perm;
+	env_store->env_status = ENV_RUNNABLE;
+	env_store->env_tf.tf_regs.reg_eax = 0;
+	//panic("sys_ipc_try_send not implemented");
+	return 0;
 }
 
 // Block until a value is ready.  Record that you want to receive
@@ -344,7 +374,14 @@ static int
 sys_ipc_recv(void *dstva)
 {
 	// LAB 4: Your code here.
-	panic("sys_ipc_recv not implemented");
+	if((uintptr_t)dstva < UTOP && PGOFF(dstva))
+		return -E_INVAL;
+
+	curenv->env_ipc_recving = 1;
+  curenv->env_ipc_dstva   = dstva;
+	curenv->env_status      = ENV_NOT_RUNNABLE;
+	sched_yield();
+	//panic("sys_ipc_recv not implemented");
 	return 0;
 }
 
@@ -406,6 +443,8 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		case SYS_page_map: ret = sys_page_map(a1, (void*)a2, a3, (void*)a4, a5); break;
 		case SYS_page_unmap: ret = sys_page_unmap(a1, (void*)a2); break;
 		case SYS_env_set_pgfault_upcall: ret = sys_env_set_pgfault_upcall(a1, (void*)a2); break;
+		case SYS_ipc_try_send: ret = sys_ipc_try_send(a1, a2, (void*)a3, a4); break;
+		case SYS_ipc_recv: ret = sys_ipc_recv((void*)a1); break;
 		//case NSYSCALLS: return 0;
 		default:
 			ret = -E_INVAL;
