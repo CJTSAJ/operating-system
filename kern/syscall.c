@@ -247,14 +247,21 @@ sys_page_map(envid_t srcenvid, void *srcva,
 		return -E_INVAL;
 
 	tmp_page = page_lookup(env_store->env_pgdir, srcva, &pte_store);
-	if(!tmp_page)
+	if(!tmp_page){
+		cprintf("tmp_page fails\n");
 		return -E_INVAL;
+	}
 
-	if(!(perm & PTE_U) || !(perm & PTE_P) || (perm & ~PTE_SYSCALL))
-		return -E_INVAL;
 
-	if((perm & PTE_W) && !(*pte_store & PTE_W))
+	if(!(perm & PTE_U) || !(perm & PTE_P) || (perm & ~PTE_SYSCALL)){
+		cprintf("(perm & PTE_U) || !(perm & PTE_P) || (perm & ~PTE_SYSCALL) fails\n");
 		return -E_INVAL;
+	}
+
+	if((perm & PTE_W) && !(*pte_store & PTE_W)){
+		cprintf("perm & PTE_W) && !(*pte_store & PTE_W fails\n");
+		return -E_INVAL;
+	}
 
 	// LAB 4: Your code here.
 	//panic("sys_page_map not implemented");

@@ -138,6 +138,53 @@ fork(void)
 int
 sfork(void)
 {
-	panic("sfork not implemented");
-	return -E_INVAL;
+	/*panic("sfork not implemented");
+	return -E_INVAL;*/
+
+	int r;
+	set_pgfault_handler(pgfault);
+
+	envid_t child = sys_exofork();
+
+	if(child < 0)
+		panic("sfork: sys_exofork failed\n");
+	if(child == 0){
+		thisenv = &envs[ENVX(sys_getenvid())];
+		return 0;
+	}
+
+
+	//now it is parent
+	//share memory except stack
+	extern unsigned char end[];
+	uintptr_t i = UTEXT;
+	for(; i < (uintptr_t)end; i+=PGSIZE){
+		if((uvpd[PDX(i)] & PTE_P) && (uvpt[PGNUM(i)] & PTE_P)){
+			int perm = uvpt[PGNUM(i)] & (PTE_P | PTE_U | PTE_W | PTE_COW | PTE_SYSCALL);
+			r = sys_page_map(0, (void*)i, child, (void*)i, perm);
+			if(r < 0)
+				panic("sfork: sys_page_map failed\n");
+		}
+	}
+
+	//stack---COW
+	for (i = (uintptr_t)ROUNDDOWN(&i, PGSIZE); i < USTACKTOP; i += PGSIZE)
+		duppage(child, PGNUM(i));
+
+	//alloc new page for exception statck
+	r = sys_page_alloc(child, (void *)(UXSTACKTOP - PGSIZE), PTE_P | PTE_U | PTE_W);
+	if(r < 0)
+		panic("sfork: sys_page_alloc failed\n");
+
+	//set page fault handler
+	extern void _pgfault_upcall(void);
+	r = sys_env_set_pgfault_upcall(child, _pgfault_upcall);
+	if (r < 0)
+		panic("sfork: sys_env_set_pgfault_upcall failed\n");
+
+	r = sys_env_set_status(child, ENV_RUNNABLE);
+	if (r < 0)
+		panic("sfork: sys_env_set_statusfailed");
+
+	return child;
 }

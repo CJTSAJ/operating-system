@@ -29,35 +29,6 @@ sched_yield(void)
 	// below to halt the cpu.
 
 	// LAB 4: Your code here.
-
-	/*envid_t env_id = curenv == NULL ? 0 : ENVX(curenv->env_id);
-  for(int i = (env_id + 1) % NENV; i != env_id; i = (i + 1) % NENV){
-    if(envs[i].env_status == ENV_RUNNABLE) {
-      env_run(&envs[i]);
-    }
-  }
-  if(curenv && curenv->env_status == ENV_RUNNING){
-    env_run(curenv);
-  }*/
-
-	//cprintf("sched_yield(void)-------------------\n");
-	/*envid_t id;
-	if (curenv)
-		id = ENVX(curenv->env_id);
-	else
-		id = -1;
-
-	for(int i=0;i<NENV;i++){
-		id = ENVX(id+1);
-		if (envs[id].env_status == ENV_RUNNABLE){
-			//cprintf("sched_yeild: choose env %d to run\n",id);
-			env_run(&envs[id]);
-		}
-	}
-
-	if(curenv && curenv->env_cpunum==cpunum() && curenv->env_status==ENV_RUNNING){
-		env_run(curenv);
-	}*/
 	size_t i;
 	if (curenv == NULL) {
 		for (i = 0; i < NENV; i++) {
@@ -78,35 +49,6 @@ sched_yield(void)
 		if(curenv->env_cpunum == cpunum() && curenv->env_status==ENV_RUNNING)
 			env_run(curenv);
 	}
-
-	/*for (i = 0; i < NENV; i++) {
-		if (envs[i].env_status == ENV_RUNNABLE ||
-		     envs[i].env_status == ENV_RUNNING)
-			break;
-	}
-	if (i == NENV) {
-		cprintf("No more runnable environments!\n");
-		while (1)
-			monitor(NULL);
-	}
-
-	// Run this CPU's idle environment when nothing else is runnable.
-	idle = &envs[cpunum()];
-	if (!(idle->env_status == ENV_RUNNABLE || idle->env_status == ENV_RUNNING))
-		panic("CPU %d: No idle environment!", cpunum());
-	env_run(idle);*/
-	/*envid_t env_index = ENVX(curenv->env_id);
-
-	for(int i = (env_index + 1) % NENV; (i % NENV) != env_index; i++){
-		if(envs[i].env_status == ENV_RUNNABLE){
-			env_run(&envs[i]);
-		}
-	}
-
-	//if no runnable, and current is still running, take it
-	if(curenv->env_status == ENV_RUNNING){
-		env_run(curenv);
-	}*/
 	// sched_halt never returns
 	sched_halt();
 }
