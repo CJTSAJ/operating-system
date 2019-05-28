@@ -19,17 +19,16 @@ syscall(int num, int check, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// The last clause tells the assembler that this can
 	// potentially change the condition codes and arbitrary
 	// memory locations.
-
 	asm volatile("int %1\n"
-		     : "=a" (ret)
-		     : "i" (T_SYSCALL),
-		       "a" (num),
-		       "d" (a1),
-		       "c" (a2),
-		       "b" (a3),
-		       "D" (a4),
-		       "S" (a5)
-		     : "cc", "memory");
+			 		: "=a" (ret)
+			 		: "i" (T_SYSCALL),
+			 		  "a" (num),
+			 		  "d" (a1),
+			 		  "c" (a2),
+			 		  "b" (a3),
+			 		  "D" (a4),
+			 		  "S" (a5)
+			 		: "cc", "memory");
 
 	if(check && ret > 0)
 		panic("syscall %d returned %d (> 0)", num, ret);
