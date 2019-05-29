@@ -73,4 +73,3 @@ umain(int argc, char **argv)
 		if ((r=write(p[1], &i, 4)) != 4)
 			panic("generator write: %d, %e", r, r >= 0 ? 0 : r);
 }
-

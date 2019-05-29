@@ -9,7 +9,7 @@ xopen(const char *path, int mode)
 {
 	extern union Fsipc fsipcbuf;
 	envid_t fsenv;
-	
+
 	strcpy(fsipcbuf.open.req_path, path);
 	fsipcbuf.open.req_omode = mode;
 
@@ -125,4 +125,3 @@ umain(int argc, char **argv)
 	close(f);
 	cprintf("large file is good\n");
 }
-

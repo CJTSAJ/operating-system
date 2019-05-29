@@ -345,24 +345,28 @@ static int
 sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 {
 	// LAB 4: Your code here.
+
 	int r;
 	struct Env* env_store;
 	r = envid2env(envid, &env_store, 0);
 	if(r < 0)
 		return r;
+
 	if(!env_store->env_ipc_recving)
 	  return -E_IPC_NOT_RECV;
 
 	if((uintptr_t)srcva < UTOP){
 		if(PGOFF(srcva))
 			return -E_INVAL;
+
 		if(!(perm & PTE_U) || !(perm & PTE_P) || (perm & ~PTE_SYSCALL))
 			return -E_INVAL;
 
 		pte_t *tmp_pte;
 		struct PageInfo* tmp_page = page_lookup(curenv->env_pgdir, srcva, &tmp_pte);
-		if(!tmp_page || ((*tmp_pte & perm) != perm))
+		if(!tmp_page || ((perm & PTE_W) && !(*tmp_pte & PTE_W)))
 			return -E_INVAL;
+
 		r = page_insert(env_store->env_pgdir, tmp_page, env_store->env_ipc_dstva, perm);
 		if(r < 0)
 			return r;
