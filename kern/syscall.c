@@ -204,6 +204,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	if(!new_page)
 		return -E_NO_MEM;
 
+
 	ret = page_insert(env_store->env_pgdir, new_page, va, perm);
 	if(ret < 0){
 		page_free(new_page);

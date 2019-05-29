@@ -28,6 +28,7 @@ ipc_recv(envid_t *from_env_store, void *pg, int *perm_store)
 
 	int r = sys_ipc_recv(pg);
 	if(r >= 0){
+		cprintf("ipc_recv: call success===============\n");
 		if(from_env_store)
 			*from_env_store = thisenv->env_ipc_from;
 		if(perm_store)

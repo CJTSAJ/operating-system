@@ -539,7 +539,8 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 	// Fill this function in
 	pte_t *tmp_pte = pgdir_walk(pgdir, va, 1);
 
-	if(!tmp_pte) return -E_NO_MEM;
+	if(!tmp_pte)
+		return -E_NO_MEM;
 
 	//must do firstly
 	pp->pp_ref++;

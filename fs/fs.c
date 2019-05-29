@@ -223,6 +223,7 @@ dir_lookup(struct File *dir, const char *name, struct File **file)
 	for (i = 0; i < nblock; i++) {
 		if ((r = file_get_block(dir, i, &blk)) < 0)
 			return r;
+
 		f = (struct File*) blk;
 		for (j = 0; j < BLKFILES; j++)
 			if (strcmp(f[j].f_name, name) == 0) {
@@ -230,6 +231,7 @@ dir_lookup(struct File *dir, const char *name, struct File **file)
 				return 0;
 			}
 	}
+	cprintf("dir_lookup not found failed\n");
 	return -E_NOT_FOUND;
 }
 
@@ -400,7 +402,6 @@ file_write(struct File *f, const void *buf, size_t count, off_t offset)
 	int r, bn;
 	off_t pos;
 	char *blk;
-
 	// Extend file if necessary
 	if (offset + count > f->f_size)
 		if ((r = file_set_size(f, offset + count)) < 0)
@@ -409,6 +410,7 @@ file_write(struct File *f, const void *buf, size_t count, off_t offset)
 	for (pos = offset; pos < offset + count; ) {
 		if ((r = file_get_block(f, pos / BLKSIZE, &blk)) < 0)
 			return r;
+
 		bn = MIN(BLKSIZE - pos % BLKSIZE, offset + count - pos);
 		memmove(blk + pos % BLKSIZE, buf, bn);
 		pos += bn;
