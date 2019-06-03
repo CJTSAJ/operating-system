@@ -67,6 +67,29 @@ sys_yield(void)
 	sched_yield();
 }
 
+static int
+sys_env_exchange(envid_t envid)
+{
+	int r;
+	struct Env *env;
+
+	if ((r = envid2env(envid, &env, 1)) < 0)
+		return r;
+
+	curenv->env_tf = env->env_tf;
+	curenv->env_pgfault_upcall = env->env_pgfault_upcall;
+	curenv->env_heap = env->env_heap;
+
+	pde_t *tmp_pgdir = curenv->env_pgdir;
+	curenv->env_pgdir = env->env_pgdir;
+	env->env_pgdir = tmp_pgdir;
+	lcr3(PADDR(curenv->env_pgdir));
+
+	env_destroy(env);
+	env_run(curenv);
+	return 0;
+}
+
 // Allocate a new environment.
 // Returns envid of new environment, or < 0 on error.  Errors are:
 //	-E_NO_FREE_ENV if no free environment is available.
@@ -136,16 +159,6 @@ sys_env_set_trapframe(envid_t envid, struct Trapframe *tf)
 	// LAB 5: Your code here.
 	// Remember to check whether the user has supplied us with a good
 	// address!
-	/*struct Env* e;
-	int r;
-
-	if((r = envid2env(envid, &e, 1)) < 0)
-		return r;
-
-	e->env_tf = *tf;
-	e->env_tf.tf_cs |= 3; //set level 3
-	e->env_tf.tf_eflags |= FL_IF;
-	return 0;*/
 	user_mem_assert(curenv, tf, sizeof(struct Trapframe), 0);
 
 	struct Env *e;
@@ -499,6 +512,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		case SYS_ipc_try_send: ret = sys_ipc_try_send(a1, a2, (void*)a3, a4); break;
 		case SYS_ipc_recv: ret = sys_ipc_recv((void*)a1); break;
 		case SYS_env_set_trapframe: ret = sys_env_set_trapframe(a1, (struct Trapframe*)a2); break;
+		case SYS_env_exchange: ret = sys_env_exchange((envid_t)a1); break;
 		//case NSYSCALLS: return 0;
 		default:
 			ret = -E_INVAL;

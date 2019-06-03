@@ -42,6 +42,7 @@ void	set_pgfault_handler(void (*handler)(struct UTrapframe *utf));
 char*	readline(const char *buf);
 
 // syscall.c
+int	sys_env_exchange(envid_t envid);
 void	sys_cputs(const char *string, size_t len);
 int	sys_cgetc(void);
 envid_t	sys_getenvid(void);
@@ -106,6 +107,10 @@ int	pageref(void *addr);
 // spawn.c
 envid_t	spawn(const char *program, const char **argv);
 envid_t	spawnl(const char *program, const char *arg0, ...);
+
+//unixexec.c
+int exec(const char *prog, const char **argv);
+int execl(const char *prog, const char *arg0, ...);
 
 // console.c
 void	cputchar(int c);

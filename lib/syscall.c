@@ -36,6 +36,12 @@ syscall(int num, int check, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	return ret;
 }
 
+int
+sys_env_exchange(envid_t envid)
+{
+	return syscall(SYS_env_exchange, 1, envid, 0, 0, 0, 0);
+}
+
 void
 sys_cputs(const char *s, size_t len)
 {
