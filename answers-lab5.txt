@@ -1,0 +1,17 @@
+1.Do you have to do anything else to ensure that this I/O privilege setting is saved 
+and restored properly when you subsequently switch from one environment to another? Why?
+答：不需要，env切换的时候，只需要通过trapframe的pop和push切换即可。
+
+challenge：unix style exec
+答：大部分代码都来自于spwan.c，不同之处在于，创建child进程后，
+把child进程的trapfram和页表赋值到父进程，然后销毁子进程。
+
+在lib目录下添加unixexec.c文件，根据spawn和spawnl函数实现lib/unixexec中的exec和execl函数，
+在kern/syscall.c文件内实现sys_env_exchange函数来复制子进程环境。
+最后在user目录下模仿spawnhelloc.c文件写一个user/testexec.c文件来测试。
+
+注意：需要修改lib/makefrag、kern/makefrag，让新增的文件能正确编译。在inc/lib.h中添加exec和execl接口，
+在lib/syscall.c中添加sys_env_exchange函数，修改kern/syscall.c中的syscall函数，让该函数能正确分发新函数。
+
+测试：make run-testexec
+结果：输出helloc world

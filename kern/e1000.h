@@ -78,6 +78,9 @@ struct rx_desc {
 
 #define E1000_RX_STATUS_DD (1U)
 
+#define TX_DESC_NUM 64
+#define TX_PKT_SIZE 1518
+
 int pci_e1000_attach(struct pci_func *pcif);
 int e1000_tx_init();
 int e1000_tx(const void *buf, uint32_t len);

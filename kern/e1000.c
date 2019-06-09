@@ -5,8 +5,9 @@
 
 static struct E1000 *base;
 
-struct tx_desc *tx_descs;
-#define N_TXDESC (PGSIZE / sizeof(struct tx_desc))
+struct tx_desc tx_descs[TX_DESC_NUM];
+char tx_buffer[TX_DESC_NUM][TX_PKT_SIZE];
+//#define N_TXDESC (PGSIZE / sizeof(struct tx_desc))
 
 int
 e1000_tx_init()
@@ -17,6 +18,28 @@ e1000_tx_init()
 
 	// Set hardward registers
 	// Look kern/e1000.h to find useful definations
+	memset(tx_descs, 0, sizeof(tx_descs));
+	for(int i = 0; i < TX_DESC_NUM; i++){
+		tx_descs[i].addr = PADDR(tx_buffer[i]);
+		tx_descs[i].status |= E1000_RX_STATUS_DD;
+	}
+
+	//init five describ register
+	base->TDLEN = sizeof(tx_descs);
+	base->TDBAL = PADDR(tx_buffer);
+	base->TDBAH = 0;
+	base->TDH = 0;
+	base->TDT = 0;
+
+	//Initialize the Transmit Control Register
+	base->TCTL |= E1000_TCTL_EN;
+	base->TCTL |= E1000_TCTL_PSP;
+	base->TCTL &= ~0xff0;
+	base->TCTL |= E1000_TCTL_CT_ETHER;
+	base->TCTL &= ~0x3ff000;
+	base->TCTL |= E1000_TCTL_COLD_FULL_DUPLEX;
+
+
 
 	return 0;
 }
@@ -43,7 +66,9 @@ pci_e1000_attach(struct pci_func *pcif)
 {
 	// Enable PCI function
 	// Map MMIO region and save the address in 'base;
-
+	pci_func_enable(pcif);
+	base = (struct E1000*)mmio_map_region(pcif->reg_base[0], pcif->reg_size[0]);
+	cprintf("pci_e1000_attach: e1000 status -- %08x\n", base->STATUS);
 	e1000_tx_init();
 	e1000_rx_init();
 	return 0;
