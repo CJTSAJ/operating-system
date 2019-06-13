@@ -3,6 +3,19 @@
 extern union Nsipc nsipcbuf;
 
 void
+sleep(int msec)
+{
+	unsigned now = sys_time_msec();
+	unsigned end = now + msec;
+
+	if ((int)now < 0 && (int)now > -MAXERROR)
+		panic("sys_time_msec: %e", (int)now);
+
+	while (sys_time_msec() < end)
+		sys_yield();
+}
+
+void
 input(envid_t ns_envid)
 {
 	binaryname = "ns_input";
@@ -14,4 +27,31 @@ input(envid_t ns_envid)
 	// Hint: When you IPC a page to the network server, it will be
 	// reading from it for a while, so don't immediately receive
 	// another packet in to the same physical page.
+	/*int r;
+	uint32_t len = 2048;
+	char buf[2048];
+	while(1){
+		if((r = sys_net_recv(buf, 2048)) < 0)
+			continue;
+
+		//while (sys_page_alloc(0, &nsipcbuf, PTE_P|PTE_W|PTE_U) < 0);
+
+		memmove(nsipcbuf.pkt.jp_data, buf, r);
+		nsipcbuf.pkt.jp_len = r;
+
+    ipc_send(ns_envid, NSREQ_INPUT, &nsipcbuf, PTE_P|PTE_W|PTE_U);
+		sleep(50);
+	}*/
+	int r;
+  char buf[2048];
+  while(1) {
+     if((r = sys_net_recv(buf, 2048)) < 0) {
+       sys_yield();
+       continue;
+     }
+     while (sys_page_alloc(0, &nsipcbuf, PTE_P|PTE_W|PTE_U) < 0) ;
+     nsipcbuf.pkt.jp_len = r;    // r must be plus
+     memmove(nsipcbuf.pkt.jp_data, buf, r);
+     while(sys_ipc_try_send(ns_envid, NSREQ_INPUT, &nsipcbuf, PTE_P|PTE_W|PTE_U) < 0) ;
+  }
 }

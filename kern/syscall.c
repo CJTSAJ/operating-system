@@ -489,7 +489,8 @@ sys_net_send(const void *buf, uint32_t len)
 	// Check the user permission to [buf, buf + len]
 	// Call e1000_tx to send the packet
 	// Hint: e1000_tx only accept kernel virtual address
-	return -1;
+	user_mem_assert(curenv, buf, len, PTE_U);
+	return e1000_tx(buf, len);
 }
 
 int
@@ -499,7 +500,8 @@ sys_net_recv(void *buf, uint32_t len)
 	// Check the user permission to [buf, buf + len]
 	// Call e1000_rx to fill the buffer
 	// Hint: e1000_rx only accept kernel virtual address
-	return -1;
+	user_mem_assert(curenv, ROUNDDOWN(buf, PGSIZE), len, PTE_U|PTE_W);
+	return e1000_rx(buf, len);
 }
 
 int32_t
@@ -546,6 +548,8 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		case SYS_env_set_trapframe: ret = sys_env_set_trapframe(a1, (struct Trapframe*)a2); break;
 		case SYS_env_exchange: ret = sys_env_exchange((envid_t)a1); break;
 		case SYS_time_msec: ret = sys_time_msec(); break;
+		case SYS_net_send: ret = sys_net_send((void *)a1, a2); break;
+		case SYS_net_recv: ret = sys_net_recv((void*)a1, a2); break;
 		//case NSYSCALLS: return 0;
 		default:
 			ret = -E_INVAL;
