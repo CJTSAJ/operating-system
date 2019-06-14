@@ -77,6 +77,7 @@ struct rx_desc {
 };
 
 #define E1000_RX_STATUS_DD (1U)
+#define E1000_RX_STATUS_EOP	(2U)
 
 #define TX_PKT_SIZE 1518
 
