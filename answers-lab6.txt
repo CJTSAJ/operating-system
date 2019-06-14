@@ -1,0 +1,23 @@
+1.How did you structure your transmit implementation? 
+In particular, what do you do if the transmit ring is full?
+答：检查到队列满了以后，返回-E_AGAIN(懒得定义新的错误类型。。。用这个代替)，然后调用panic报错
+
+2.How did you structure your receive implementation? 
+In particular, what do you do if the receive queue is empty and a user environment requests the next incoming packet?
+答：当队列为空时，返回-E_AGAIN，并且调用sys_yield，释放cpu资源，等待下次唤醒
+
+3.What does the web page served by JOS's web server say?
+答：显示两句话，第一句话是静态： This file come from JOS
+第二句话为动态(从右向左水平移动)：cheesy web page!
+
+4.How long approximately did it take you to do this lab?
+答：总共加起来4,5天左右
+
+challenge！
+选择EEPROM，动态加载MAC地址
+
+1.首先在strcut E1000中添加volatile uint32_t EERD;
+2.在e1000.c中定义dynamic_read_mac函数，根据传入的值(0 1 2)分别读取低中高三部分地址
+3.将读取的地址高位赋值给RAH，低位和中位RAL
+4.在syscall中添加sys_dynamic_mac函数
+5.在net/lwip/jos/jif/jif.c调用sys_dynamic_mac动态读取MAC地址

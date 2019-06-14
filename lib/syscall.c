@@ -37,6 +37,12 @@ syscall(int num, int check, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 }
 
 int
+sys_dynamic_mac(uint8_t* addr)
+{
+	return syscall(SYS_dynamic_mac, 0, (uint32_t) addr, 0, 0, 0, 0);
+}
+
+int
 sys_env_exchange(envid_t envid)
 {
 	return syscall(SYS_env_exchange, 1, envid, 0, 0, 0, 0);

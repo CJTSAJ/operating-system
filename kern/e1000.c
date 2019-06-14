@@ -9,6 +9,16 @@ static volatile struct E1000 *base;
 
 struct tx_desc *tx_descs;
 char tx_buffer[N_TXDESC][TX_PKT_SIZE];
+
+static uint16_t
+dynamic_read_mac(uint8_t addr)
+{
+	base->EERD |= E1000_EERD_START | (addr << 8); // which part to read
+	while(!(base->EERD & E1000_EERD_DONE));
+	base->EERD &= ~E1000_EERD_DONE;
+	return base->EERD >> 16;
+}
+
 int
 e1000_tx_init()
 {
@@ -74,6 +84,21 @@ e1000_rx_init()
 	base->RDT = 0;
 
 	base->RCTL = E1000_RCTL_EN | E1000_RCTL_SECRC | E1000_RCTL_BSIZE_2048;
+
+	//	Challenge!
+	/*uint16_t first_byte = dynamic_read_mac(0x0);
+	uint16_t second_byte = dynamic_read_mac(0x1);
+	uint16_t third_byte = dynamic_read_mac(0x2);
+
+	dynamic_mac[0] = (first_byte >> 0) & 0xFF;
+	dynamic_mac[1] = (first_byte >> 8) & 0xFF;
+	dynamic_mac[2] = (second_byte >> 0) & 0xFF;
+	dynamic_mac[3] = (second_byte >> 8) & 0xFF;
+	dynamic_mac[4] = (third_byte >> 0) & 0xFF;
+	dynamic_mac[5] = (third_byte >> 8) & 0xFF;
+
+	base->RAH = third_byte | (1U << 31);
+	base->RAL = (second_byte << 16) | first_byte;*/
 	base->RAH = QEMU_MAC_HIGH;
 	base->RAL = QEMU_MAC_LOW;
 	//base->IMS  = 0xdf;

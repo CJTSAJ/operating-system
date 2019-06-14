@@ -39,7 +39,11 @@ struct E1000 {
 	volatile uint32_t MTA[128];         /* 0x05200  Multicast Table Array - RW Array */
 	volatile uint32_t RAL;              /* 0x05400  Receive Address Low - RW */
 	volatile uint32_t RAH;              /* 0x05404  Receive Address High - RW */
+
+	volatile uint32_t EERD;             /* dynamic load mac*/
 };
+#define E1000_EERD_START	(1U)				/* dynamic load mac read start*/
+#define E1000_EERD_DONE		(1U << 4)   /* dynamic load mac read done*/
 
 #define E1000_TCTL_EN                2U
 #define E1000_TCTL_PSP               8U
@@ -85,5 +89,7 @@ int pci_e1000_attach(struct pci_func *pcif);
 int e1000_tx_init();
 int e1000_tx(const void *buf, uint32_t len);
 int e1000_rx(void *buf, uint32_t len);
+
+uint8_t dynamic_mac[6];
 
 #endif  // SOL >= 6

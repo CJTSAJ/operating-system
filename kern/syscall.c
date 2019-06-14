@@ -15,6 +15,13 @@
 #include <kern/e1000.h>
 #include <kern/spinlock.h>
 
+int
+sys_dynamic_mac(uint8_t* addr)
+{
+	memmove(addr, dynamic_mac, 6);
+	return 0;
+}
+
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
 // Destroys the environment on memory errors.
@@ -550,6 +557,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		case SYS_time_msec: ret = sys_time_msec(); break;
 		case SYS_net_send: ret = sys_net_send((void *)a1, a2); break;
 		case SYS_net_recv: ret = sys_net_recv((void*)a1, a2); break;
+		case SYS_dynamic_mac: ret = sys_dynamic_mac((uint8_t*) a1); break;
 		//case NSYSCALLS: return 0;
 		default:
 			ret = -E_INVAL;
